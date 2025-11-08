@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gajanan Gruh Udyog</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body class="bg-light">
+  
+    <section id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active position-relative">
+                <img src="{{ url_for('static', filename='images/hero1.png') }}" 
+                     class="d-block w-100" 
+                     style="height: 30vh; object-fit: cover; filter: brightness(80%);">
+                <div class="carousel-caption d-flex flex-column justify-content-center h-100">
+                  <div class="bg-light bg-opacity-75 rounded px-4 py-3 d-inline-block text-dark">
+                    <h3 class="fw-bold mb-2">Welcome to Gajanan Gruh Udyog Store</h3>
+                    <p class="mb-0 small">Pure homemade Khakhras & Bhakhris made with love ❤️</p>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </section>
+      
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container mt-3">
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+    {% endwith %}
+
+
+    <div class="alert alert-info text-center py-2 mb-0 small">
+        📞 <strong>Note:</strong> Contact us directly for wholesale requirements.
+    </div>
+
+    <div class="container my-4">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <ul class="nav nav-tabs flex-grow-1" id="categoryTabs" role="tablist">
+            {% for category, items in categories.items() %}
+                <li class="nav-item" role="presentation">
+                <button 
+                    class="nav-link {% if loop.first %}active{% endif %}" 
+                    id="{{ category|replace(' ', '_') }}-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#{{ category|replace(' ', '_') }}" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="{{ category|replace(' ', '_') }}" 
+                    aria-selected="{{ 'true' if loop.first else 'false' }}"
+                >
+                    {{ category }}
+                </button>
+                </li>
+            {% endfor %}
+            </ul>
+
+            <div class="ms-3">
+            <a href="{{ url_for('cart') }}" class="btn btn-outline-primary position-relative">
+                <i class="bi bi-cart3"></i> 
+                {% if cart_count and cart_count > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ cart_count }}
+                </span>
+                {% endif %}
+            </a>
+            </div>
+        </div>
+
+    
+        <div class="tab-content mt-4" id="categoryTabContent">
+        {% for category, items in categories.items() %}
+            <div 
+            class="tab-pane fade {% if loop.first %}show active{% endif %}" 
+            id="{{ category|replace(' ', '_') }}" 
+            role="tabpanel" 
+            aria-labelledby="{{ category|replace(' ', '_') }}-tab"
+            >
+            <div class="row g-3">
+                {% for product in items %}
+                <div class="col-6 col-md-3 col-lg-2">
+                <div class="card h-100 shadow-sm border-0">
+                    <img 
+                    src="{{ url_for('static', filename='images/' ~ product.category ~ '/' ~ product.image) }}"
+                    class="card-img-top img-fluid"
+                    alt="{{ product.name }}"
+                    style="object-fit: contain; height: 200px; padding: 10px;"
+                    >
+                    
+                    {% if product.tags|lower == 'jain' %}
+                    <span class="position-absolute top-0 end-0 m-2 badge bg-success">
+                        {{ product.tags }}
+                    </span>
+                    {% endif %}
+                    
+                    <div class="card-body text-center p-2">
+                    <h5 class="card-title fw-bold text-primary text-truncate mb-1" style="font-size: 0.9rem;">
+                        {{ product.name }}
+                    </h5>
+                    <p class="mb-1">
+                        <span class="badge bg-warning text-dark fs-7">₹{{ "{:,}".format(product.price) }}</span>
+                        <span class="text-muted small"> | Qty: {{ product.quantity }}</span>
+                    </p>
+                    {% if product.ingredients %}
+                    <p class="text-muted mb-2" style="font-size: 0.5rem;">
+                        <strong>Ingredients:</strong> {{ product.ingredients }}
+                    </p>
+                    {% endif %}
+                    
+                    <form 
+                        action="{{ url_for('add_to_cart', product_id=product.id) }}" 
+                        method="POST"
+                        class="d-flex justify-content-center align-items-center gap-1"
+                    >
+                        <div class="input-group input-group-sm" style="max-width: 90px;">
+                        <button 
+                            class="btn btn-outline-secondary py-0 px-1" 
+                            type="button" 
+                            style="font-size: 0.75rem;"
+                            onclick="changeQty(this, -1)"
+                        >−</button>
+                        <input 
+                            type="number" 
+                            name="quantity" 
+                            value="1" 
+                            min="1" 
+                            class="form-control text-center p-0" 
+                            style="max-width: 35px; font-size: 0.75rem;"
+                        >
+                        <button 
+                            class="btn btn-outline-secondary py-0 px-1" 
+                            type="button" 
+                            style="font-size: 0.75rem;"
+                            onclick="changeQty(this, 1)"
+                        >+</button>
+                        </div>
+                    
+                        <button 
+                        class="btn btn-outline-primary btn-sm py-0 px-2 d-flex align-items-center justify-content-center"
+                        style="font-size: 0.75rem; white-space: nowrap;"
+                        >
+                        <i class="bi bi-cart-plus me-1"></i> Add
+                        </button>
+                    </form>
+                    </div>
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+            </div>
+        {% endfor %}
+        </div>
+    
+    </div>
+
+  <footer class="bg-dark text-white mt-5 py-4">
+    <div class="container text-center text-md-start">
+      <div class="row gy-3">
+        <div class="col-12 col-md-4">
+          <h6 class="fw-bold text-uppercase">About Us</h6>
+          <p class="small mb-0">
+            Khakhras | Bhakhris | Vacuum packing | Wholesale | PAN India
+          </p>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <h6 class="fw-bold text-uppercase">Contact Us</h6>
+          <ul class="list-unstyled small mb-0">
+            <li><i class="bi bi-person me-2"></i> Nisarg Dedhiya</li>
+            <li><i class="bi bi-envelope me-2"></i> dedhiyanisarg16@gmail.com</li>
+            <li><i class="bi bi-telephone me-2"></i> +91 97237 16802</li>
+          </ul>
+        </div>
+        <div class="col-12 col-md-4">
+            <h6 class="fw-bold text-uppercase">Address</h6>
+            <p class="small mb-0">
+                Plot no 50, near garba mandap, GIDC Colony, Umbergaon, dist. Valsad, Gujarat-396171
+            </p>
+          </div>
+      </div>
+
+      <hr class="border-secondary my-3">
+      <div class="text-center small text-muted">
+        &copy; 2025 Mobile Store. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function changeQty(button, delta) {
+      const input = button.parentNode.querySelector('input[name="quantity"]');
+      let newVal = parseInt(input.value) + delta;
+      if (newVal < 1) newVal = 1;
+      input.value = newVal;
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
