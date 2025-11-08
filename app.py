@@ -1,4 +1,4 @@
-from os import stat
+import os
 from flask import Flask, render_template, session, redirect, url_for, request, flash, render_template_string
 import pandas as pd
 from flask_mail import Mail, Message
@@ -7,10 +7,12 @@ from collections import defaultdict
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
+app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'gajanankhakhra@gmail.com'
 app.config['MAIL_PASSWORD'] = 'lufj csru dfnv nobq' 
+# email_user = os.environ.get("EMAIL_USER")
+# email_pass = os.environ.get("EMAIL_PASSWORD")
 
 def get_cart_count():
     cart = session.get("cart", [])
@@ -32,8 +34,6 @@ def home():
 
     cart = session.get("cart", [])
     cart_count = sum(item["quantity"] for item in cart)
-
-    print(categories)
 
     return render_template("index.html", categories=categories, cart_count=cart_count)
 
